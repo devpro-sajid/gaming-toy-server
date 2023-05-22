@@ -28,10 +28,10 @@ async function run() {
         const toysCollection = db.collection("toys");
 
 
-        const indexKeys = { toyName: 1 }; // Replace field1 and field2 with your actual field names
-        const indexOptions = { name: "toyName" }; // Replace index_name with the desired index name
-        const result = await toysCollection.createIndex(indexKeys, indexOptions);
-        console.log(result);
+        const indexKeys = { toyName: 1, category: 1 }; // Replace field1 and field2 with your actual field names
+    const indexOptions = { name: "titleCategory" }; // Replace index_name with the desired index name
+    const result = await toysCollection.createIndex(indexKeys, indexOptions);
+    console.log(result);
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -41,14 +41,24 @@ async function run() {
           res.send(toys);
         });
 
-        app.get("/getToysByName/:text", async (req, res) => {
+        app.get("/toysSort/:num", async (req, res)=>{
+         
+          const toys=await toysCollection.find({}).sort({toyPrice: req.params.num}).limit(20).toArray();
+          res.send(toys);
+          });
+
+          app.get("/getToysByCat/:text", async (req, res) => {
             const text = req.params.text;
             const result = await toysCollection
-                .find(
-                    { toyName: { $regex: text, $options: "i" } }
-                ).toArray().limit(20);
+              .find({
+                $or: [
+                  { toyName: { $regex: text, $options: "i" } },
+                  { category: { $regex: text, $options: "i" } },
+                ],
+              }).limit(20)
+              .toArray();
             res.send(result);
-        });
+          });
 
         app.get("/allToysByCategory/:cat", async (req, res) => {
             console.log(req.params.category);
