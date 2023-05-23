@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
@@ -59,6 +59,10 @@ async function run() {
       res.send(result);
     });
     // my toys
+    app.get("/myToys", async (req, res) => {
+      const toys = await toysCollection.find({ sellerEmail: req.query.email }).limit(20).toArray();
+      res.send(toys);
+    });
     app.get("/sortMyToys", async (req, res) => {
       const toys = await toysCollection.find({ sellerEmail: req.query.email }).sort({ toyPrice: req.query.num }).limit(20).toArray();
       res.send(toys);
@@ -104,6 +108,31 @@ async function run() {
         });
       }
     });
+    // update toy
+      app.put('/updateToy/:id', async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: new ObjectId(id)}
+            const options = { upsert: true };
+            const updatedToy = req.body;
+
+            const toy = {
+                $set: {
+                    toyName: updatedToy.toyName, 
+                    quantity: updatedToy.quantity, 
+                    toyPhoto:updatedToy.toyPhoto,
+                    sellerName:updatedToy.sellerName,
+                    sellerEmail:updatedToy.sellerEmail,
+                    category:updatedToy.category,
+                    toyPrice:updatedToy.toyPrice,
+                    rating:updatedToy.rating,
+                    detailsDes:updatedToy.detailsDes
+                }
+            }
+
+            const result = await toysCollection.updateOne(filter, toy, options);
+            res.send(result);
+        })
+    
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
