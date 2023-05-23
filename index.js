@@ -35,7 +35,7 @@ async function run() {
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-// All toys
+    // All toys
     app.get("/allToys", async (req, res) => {
       const toys = await toysCollection.find({}).limit(20).toArray()
       res.send(toys);
@@ -76,17 +76,16 @@ async function run() {
             { category: { $regex: text, $options: "i" } },
           ],
         },
-        {sellerEmail:req.query.email}
+          { sellerEmail: req.query.email }
         ).limit(20)
         .toArray();
       res.send(result);
     });
 
 
-    
-// toys cat home
+
+    // toys cat home
     app.get("/allToysByCategory/:cat", async (req, res) => {
-      console.log(req.params.category);
       const toys = await toysCollection
         .find({
           category: req.params.cat
@@ -94,10 +93,9 @@ async function run() {
         .toArray();
       res.send(toys);
     });
-// add a toy
+    // add a toy
     app.post("/add-toy", async (req, res) => {
       const body = req.body;
-      console.log(body);
       const result = await toysCollection.insertOne(body);
       if (result?.insertedId) {
         return res.status(200).send(result);
@@ -109,30 +107,44 @@ async function run() {
       }
     });
     // update toy
-      app.put('/updateToy/:id', async(req, res) => {
-            const id = req.params.id;
-            const filter = {_id: new ObjectId(id)}
-            const options = { upsert: true };
-            const updatedToy = req.body;
+    app.put('/updateToy/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true };
+      const updatedToy = req.body;
 
-            const toy = {
-                $set: {
-                    toyName: updatedToy.toyName, 
-                    quantity: updatedToy.quantity, 
-                    toyPhoto:updatedToy.toyPhoto,
-                    sellerName:updatedToy.sellerName,
-                    sellerEmail:updatedToy.sellerEmail,
-                    category:updatedToy.category,
-                    toyPrice:updatedToy.toyPrice,
-                    rating:updatedToy.rating,
-                    detailsDes:updatedToy.detailsDes
-                }
-            }
+      const toy = {
+        $set: {
+          toyName: updatedToy.toyName,
+          quantity: updatedToy.quantity,
+          toyPhoto: updatedToy.toyPhoto,
+          sellerName: updatedToy.sellerName,
+          sellerEmail: updatedToy.sellerEmail,
+          category: updatedToy.category,
+          toyPrice: updatedToy.toyPrice,
+          rating: updatedToy.rating,
+          detailsDes: updatedToy.detailsDes
+        }
+      }
 
-            const result = await toysCollection.updateOne(filter, toy, options);
-            res.send(result);
-        })
-    
+      const result = await toysCollection.updateOne(filter, toy, options);
+      res.send(result);
+    })
+    // delete toy
+    app.delete('/deleteToy/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await toysCollection.deleteOne(query);
+      res.send(result);
+    })
+    // Single Toy
+    app.get('/toyDetails/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await toysCollection.findOne(query);
+      res.send(result);
+    })
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
