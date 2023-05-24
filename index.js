@@ -19,35 +19,30 @@ const client = new MongoClient(uri, {
   },
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  maxPoolSize: 10
+  maxPoolSize: 10,
 });
 
 async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
 
     const db = client.db("toysDB");
     const toysCollection = db.collection("toys");
 
-
-    const indexKeys = { toyName: 1, category: 1 }; // Replace field1 and field2 with your actual field names
-    const indexOptions = { name: "titleCategory" }; // Replace index_name with the desired index name
+    const indexKeys = { toyName: 1, category: 1 }; 
+    const indexOptions = { name: "titleCategory" }; 
     const result = await toysCollection.createIndex(indexKeys, indexOptions);
-    console.log(result);
-    // Send a ping to confirm a successful connection
+  
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    // All toys
+   
     app.get("/allToys", async (req, res) => {
       const toys = await toysCollection.find({}).limit(20).toArray()
       res.send(toys);
     });
 
     app.get("/toysSort/:num", async (req, res) => {
-
       const toys = await toysCollection.find({}).sort({ toyPrice: req.params.num }).limit(20).toArray();
       res.send(toys);
     });
+
     app.get("/getToysByCat/:text", async (req, res) => {
       const text = req.params.text;
       const result = await toysCollection
@@ -84,8 +79,6 @@ async function run() {
       res.send(result);
     });
 
-
-
     // toys cat home
     app.get("/allToysByCategory/:cat", async (req, res) => {
       const toys = await toysCollection
@@ -95,6 +88,7 @@ async function run() {
         .toArray();
       res.send(toys);
     });
+
     // add a toy
     app.post("/add-toy", async (req, res) => {
       const body = req.body;
@@ -108,6 +102,7 @@ async function run() {
         });
       }
     });
+
     // update toy
     app.put('/updateToy/:id', async (req, res) => {
       const id = req.params.id;
@@ -132,6 +127,7 @@ async function run() {
       const result = await toysCollection.updateOne(filter, toy, options);
       res.send(result);
     })
+
     // delete toy
     app.delete('/deleteToy/:id', async (req, res) => {
       const id = req.params.id;
@@ -139,6 +135,7 @@ async function run() {
       const result = await toysCollection.deleteOne(query);
       res.send(result);
     })
+
     // Single Toy
     app.get('/toyDetails/:id', async (req, res) => {
       const id = req.params.id;
@@ -146,12 +143,7 @@ async function run() {
       const result = await toysCollection.findOne(query);
       res.send(result);
     })
-
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
   }
-}
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
@@ -159,5 +151,5 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log('Toy server is running on port', port)
+  console.log('Toy server is running on port', port);
 })
