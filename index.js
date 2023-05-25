@@ -34,12 +34,12 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
    
     app.get("/allToys", async (req, res) => {
-      const toys = await toysCollection.find({}).limit(20).toArray()
+      const toys = await toysCollection.find().limit(20).toArray()
       res.send(toys);
     });
 
     app.get("/toysSort/:num", async (req, res) => {
-      const toys = await toysCollection.find({}).sort({ toyPrice: req.params.num }).limit(20).toArray();
+      const toys = await toysCollection.find().sort({ toyPrice: req.params.num }).limit(20).toArray();
       res.send(toys);
     });
 
